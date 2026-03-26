@@ -465,6 +465,7 @@ WITH ventas_base AS (
         t.eancode,
         t.fecha,
         EXTRACT(YEAR FROM t.fecha) AS año,
+        to_char(t.fecha, 'YYYY-MM') as año_mes,
         EXTRACT(QUARTER FROM t.fecha) AS trimestre,
         t.unidades_vendidas,
         COALESCE(t.precio_regular, t.precio_promocional) AS precio,
@@ -487,6 +488,7 @@ FROM (
     SELECT 
         idcadena,
    		año,
+   		año_mes,
    		trimestre,
    		familia,
         convert_from(convert_to(categoria, 'LATIN1'), 'UTF8') AS categoria,
@@ -501,28 +503,28 @@ FROM (
         rank() OVER (PARTITION BY idcadena ORDER BY SUM(venta) DESC) AS ranking
     FROM ventas_base
     GROUP BY idcadena, 
-    año, trimestre, familia, categoria
+    año, año_mes, trimestre, familia, categoria
 ) t
 WHERE ranking <= 10
-order by año asc;
+order by ranking asc;
 
 7. Modelado en Power BI
 
 Modelo de datos
 
-Tabla de hechos: vw_venta_ticket
+Tabla de hechos: fact_venta_ticket
 
 Contiene el detalle de todas las transacciones de venta.
 Incluye información de tickets y atributos de productos.
 
-Tabla de dimensiones: Calendario
+Tabla de dimensiones: dim_calendario
 
-Tabla Calendario creada con DAX
+Tabla dim_calendario creada con DAX
 
 Tabla de fechas creada en DAX.
 Permite análisis por año, mes, trimestre y día.
 
-Calendario = 
+dim_calendario = 
 ADDCOLUMNS(
     CALENDAR(DATE(2023,1,1), DATE(2024,12,31)),
     "Año", YEAR([Date]),
@@ -567,9 +569,9 @@ Lenguaje M utilizado para reemplazar valores nulos a "A DEFINIR" dentro de las c
 
 = Table.ReplaceValue(#"Columnas quitadas",null,"A DEFINIR",Replacer.ReplaceValue,{"familia", "categoria"})
 
-Medida DAX utilizada para obtener el costo por cada venta en la tabla de hechos vw_venta_ticket
+Medida DAX utilizada para obtener el costo por cada venta en la tabla de hechos fact_venta_ticket
 
-med_venta_total_por_ticket = SUMX(vw_venta_ticket, vw_venta_ticket[unidades_vendidas] * vw_venta_ticket[precio])
+med_venta_total_por_ticket = SUMX(fact_venta_ticket, fact_venta_ticket[unidades_vendidas] * fact_venta_ticket[precio])
 
 
 9. Insights
