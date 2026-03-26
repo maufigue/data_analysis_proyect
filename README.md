@@ -79,7 +79,7 @@ Lectura de CSV con pandas
 Separador ;
 Manejo de encoding (utf-8 / latin1)
 
-🔹 4.2 Transformación
+4.2 Transformación
 
 Se aplicaron las siguientes reglas:
 
