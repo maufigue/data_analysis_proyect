@@ -1,0 +1,43 @@
+1. Pasos realizados
+
+Se desarrolló un pipeline de datos desde la ingesta hasta la visualización:
+
+Carga de datos desde archivos CSV utilizando Python (pandas)
+Limpieza y transformación de datos
+Creación de tablas tickets y productos en PostgreSQL
+Migración a PostgreSQL mediante cargas masivas con Python
+Creación de vistas en SQL
+Modelado de datos utilizando la tabla de hechos + vistas agregadas
+Conexión de PostgreSQL con Power BI
+Transformación de columnas y agregado de datos con el lenguaje M
+Creación de la tabla calendario para relacionar las fechas con la tabla de hechos
+Construcción de dashboard interactivo con DAX
+
+2. Decisiones de modelado
+
+unidades_vendidas * precio = ventas para identificar la venta de cada fila en la tabla tickets
+ROUND(venta::numeric, 2) para controlar los decimales
+Se definió una tabla de hechos (vw_venta_ticket) que almacena todas las transacciones
+Se crearon vistas agregadas en SQL para reducir la carga en el dashboard
+Se utilizaron funciones como:
+COALESCE para manejo de nulos
+DISTINCT ON para evitar duplicados
+LAG para comparaciones temporales
+EXTRACT para obtener partes de una fecha
+RANK para generar ranking
+GROUP BY para las agrupaciónes
+WHERE para el filtrado
+CTE (WITH) para mejorar la legibilidad y reutilizar la consulta
+convert_from(convert_to(categoria, 'LATIN1'), 'UTF8') para corregir el encoding a utf-8
+CASE WHEN en la aplicación a las reglas de contribución
+LEFT JOIN para unir las tablas y evitar perdida de datos registrados en la tabla ticket
+LEFT JOIN (SELECT DISTINCT ON) p uso de subqueries para evitar duplicados
+Se implementó una tabla calendario en DAX para análisis de fechas
+
+3. Supuestos adoptados
+
+Se consideró como precio válido COALESCE(precio_regular, precio_promocional)
+Se excluyeron tickets anulados con anulado IS NOT TRUE
+Se identifica que eancode + idcadena relacionan un producto en la tabla de tickets
+Para productos duplicados se tomó el registro más reciente 
+Categorías con problemas de encoding fueron normalizadas
